@@ -1,42 +1,64 @@
-# Turborepo starter with shell commands
+# Turborepo Bugreport
 
-This is an official starter Turborepo meant for debugging, learning, and exploring.
+This is a bug report to demonstrate that the ``update`` command on @turbo/codemod does not work with Yarn 4+
 
-## Using this example
+Below is the output from the console commands:
 
-Run the following command:
+```console
+Microsoft Windows [Version 10.0.19045.5131]
+(c) Microsoft Corporation. All rights reserved.
 
-```sh
-npx create-turbo@latest -e with-shell-commands
+D:\repos\Bugs\TurboCodemodYarnFour>npx create-turbo@canary -e with-shell-commands 
+? Where would you like to create your Turborepo? .
+? Which package manager do you want to use? yarn
+
+>>> Creating a new Turborepo with:
+
+Application packages
+ - apps\app-a: An application that uses other Internal Packages
+rds.                                                                                                                     rds.
+Library packages
+ - packages\pkg-a
+ - packages\pkg-b
+ - packages\tooling-config: A package used by every other package.
+
+>>> Success! Your new Turborepo is ready.
+
+To get started:
+- Enable Remote Caching (recommended): npx turbo login
+   - Learn more: https://turbo.build/repo/remote-cache
+
+- Run commands with Turborepo:
+- Run a command twice to hit cache
+
+D:\repos\Bugs\TurboCodemodYarnFour>yarn set version 4.5.3
+(node:18780) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+➤ YN0000: You don't seem to have Corepack enabled; we'll have to rely on yarnPath instead
+➤ YN0000: Downloading https://repo.yarnpkg.com/4.5.3/packages/yarnpkg-cli/bin/yarn.js
+➤ YN0000: Saving the new release in .yarn/releases/yarn-4.5.3.cjs
+➤ YN0000: Done with warnings in 0s 696ms
+
+D:\repos\Bugs\TurboCodemodYarnFour>npx @turbo/codemod@canary update
+? Where is the root of the repo to migrate? .
+No codemods required to migrate from 2.3.4-canary.2 to 2.3.3 
+
+Upgrading turbo from 2.3.4-canary.2 to 2.3.3 (no codemods required) 
+
+Upgrading turbo with yarn add turbo@latest --dev -W 
+
+Migration failed
+Unable to upgrade turbo: Error: Command failed: yarn add turbo@latest --dev -W
+
+D:\repos\Bugs\TurboCodemodYarnFour>yarn add turbo@latest --dev -W 
+Unknown Syntax Error: Command not found; did you mean one of:
+
+  0. yarn add [--json] [-F,--fixed] [-E,--exact] [-T,--tilde] [-C,--caret] [-D,--dev] [-P,--peer] [-O,--optional] [--prefer-dev] [-i,--interactive] [--cached] [--mode #0] ...
+  1. yarn add [--json] [-F,--fixed] [-E,--exact] [-T,--tilde] [-C,--caret] [-D,--dev] [-P,--peer] [-O,--optional] [--prefer-dev] [-i,--interactive] [--cached] [--mode #0] ...
+
+While running add turbo@latest --dev -W
+
+D:\repos\Bugs\TurboCodemodYarnFour>
 ```
 
-### For bug reproductions
-
-Giving the Turborepo core team a minimal reproduction is the best way to create a tight feedback loop for a bug you'd like to report.
-
-Because most monorepos will rely on more tooling than Turborepo (frameworks, linters, formatters, etc.), it's often useful for us to have a reproduction that strips away all of this other tooling so we can focus _only_ on Turborepo's role in your repo. This example does exactly that, giving you a good starting point for creating a reproduction.
-
-- Feel free to rename/delete packages for your reproduction so that you can be confident it most closely matches your use case.
-- If you need to use a different package manager to produce your bug, run `npx @turbo/workspaces convert` to switch package managers.
-- It's possible that your bug really **does** have to do with the interaction of Turborepo and other tooling within your repository. If you find that your bug does not reproduce in this minimal example and you're confident Turborepo is still at fault, feel free to bring that other tooling into your reproduction.
-
-## What's inside?
-
-This Turborepo includes the following packages:
-
-### Apps and Packages
-
-- `app-a`: A final package that depends on all other packages in the graph and has no dependents. This could resemble an application in your monorepo that consumes everything in your monorepo through its topological tree.
-- `app-b`: Another final package with many dependencies. No dependents, lots of dependencies.
-- `pkg-a`: A package that has all scripts in the root `package.json`.
-- `pkg-b`: A package with _almost_ all scripts in the root `package.json`.
-- `tooling-config`: A package to simulate a common configuration used for all of your repository. This could resemble a configuration for tools like TypeScript or ESLint that are installed into all of your packages.
-
-### Some scripts to try
-
-If you haven't yet, [install global `turbo`](https://turbo.build/repo/docs/installing#install-globally) to run tasks.
-
-- `turbo build lint typecheck`: Runs all tasks in the default graph.
-- `turbo build`: A basic command to build `app-a` and `app-b` in parallel.
-- `turbo build --filter=app-a`: Building only `app-a` and its dependencies.
-- `turbo lint`: A basic command for running lints in all packages in parallel.
+From my guesses the ``-W`` flag is the villain here! It doesn't seem to exist on Yarn 4+
